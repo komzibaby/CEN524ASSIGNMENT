@@ -1,0 +1,39 @@
+import tensorflow as tf
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+import numpy as np
+
+# Load the Iris dataset
+iris = load_iris()
+X, y = iris.data[:100, :], iris.target[:100]
+
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Standardize the features
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Define the Perceptron model using TensorFlow
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(1, activation='sigmoid', input_shape=(4,))
+])
+
+# Compile the model
+model.compile(optimizer='sgd', loss='binary_crossentropy', metrics=['accuracy'])
+
+# Train the model
+model.fit(X_train_scaled, y_train, epochs=10, batch_size=1, verbose=1)
+
+# Evaluate the model
+loss, accuracy = model.evaluate(X_test_scaled, y_test)
+print("Accuracy:", accuracy)
+
+# Make predictions
+y_pred_proba = model.predict(X_test_scaled)
+y_pred = np.round(y_pred_proba).astype(int)
+conf_matrix = tf.math.confusion_matrix(y_test, y_pred)
+
+print("Confusion Matrix:\n", conf_matrix)
